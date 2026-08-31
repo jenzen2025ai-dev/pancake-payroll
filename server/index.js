@@ -19,7 +19,7 @@ app.get("/api/auth/me", (req, res) => {
 app.post("/api/auth/login", (req, res) => {
   const { username, password } = req.body;
   const u = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
-  if (!u || u.password !== password) return res.status(401).json({ error: "?餃憭望?" });
+  if (!u || u.password !== password) return res.status(401).json({ error: "登入失敗" });
   req.session.userId = u.id;
   res.json({ user: { id: u.id, username: u.username, role: u.role, employeeId: u.employeeId } });
 });
@@ -38,7 +38,7 @@ app.get("/api/employees", (req, res) => {
 app.post("/api/employees", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT role FROM users WHERE id = ?").get(req.session.userId);
-  if (u.role !== "admin") return res.status(403).json({ error: "?⊥??? });
+  if (u.role !== "admin") return res.status(403).json({ error:  "無權限" });
   const rows = req.body;
   for (const r of rows) {
     db.prepare("INSERT OR REPLACE INTO employees (id,name,englishName,jobTitle,department,baseSalary,fixedAllowance,fssEmployer,fssEmployee,m5TaxTable,joinedAt,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(
@@ -74,7 +74,7 @@ app.get("/api/payroll/:period", (req, res) => {
 app.post("/api/payroll/:period", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT role FROM users WHERE id = ?").get(req.session.userId);
-  if (u.role !== "admin") return res.status(403).json({ error: "?⊥??? });
+  if (u.role !== "admin") return res.status(403).json({ error:  "無權限" });
   const insert = db.prepare("INSERT OR REPLACE INTO payroll_records (employeeId,period,otHours,otRate,shDays,noPayLeaveDays,tipPay,m5Tax,fssEmp) VALUES (?,?,?,?,?,?,?,?,?)");
   for (const r of req.body) {
     insert.run(r.emp.id, req.params.period, r.otHours, r.otRate, r.shDays, r.noPayLeaveDays, r.tipPay, r.m5Tax ?? -1, r.fssEmp ?? 30);
