@@ -16,7 +16,7 @@ db.exec(`
     password TEXT NOT NULL,
     role TEXT NOT NULL DEFAULT "employee",
     employeeId INTEGER,
-    createdAt TEXT DEFAULT (datetime("now"))
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS employees (
