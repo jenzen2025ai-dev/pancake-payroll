@@ -1,7 +1,7 @@
 ﻿import type { PayrollResult } from "../types";
 
 export function exportCsv(rows: PayrollResult[], period: string) {
-  const header = ["??","憪?","摨","?箏?瘣亥票","OT?","OT??","瘜??瘣亥票","?∟?","撠祥/瘣亥票","蝮賣??,"M/5?瑟平蝔?,"FSS?勗","撖行"];
+  const header = ['期間','姓名','底薪','固定津貼','OT時數','OT金額','法定假日津貼','無薪假扣','小費/津貼','總收入','M/5職業稅','FSS僱員','實收'];
   const lines = [header.join(",")];
   for (const r of rows) {
     lines.push([
