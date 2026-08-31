@@ -1,5 +1,6 @@
 ﻿import express from "express";
 import session from "express-session";
+import SQLiteStore from "connect-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
 import { db } from "./db.js";
