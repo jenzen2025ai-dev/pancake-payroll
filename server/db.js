@@ -9,7 +9,7 @@ fs.mkdirSync(dataDir, { recursive: true });
 
 export const db = new Database(path.join(dataDir, "payroll.db"));
 
-db.exec(`
+db.exec(
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
