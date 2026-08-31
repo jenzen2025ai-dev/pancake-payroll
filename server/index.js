@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import session from "express-session";
 import SQLiteStore from "connect-sqlite3";
 import path from "path";
@@ -7,8 +7,15 @@ import { db } from "./db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const SQLiteSessionStore = SQLiteStore(session);
 
+// ✅ Render 係 HTTPS 反向代理，必須加呢行
+app.set('trust proxy', 1);
+
+// ✅ 解析前端發送嘅 JSON（必須寫喺路由之前！）
+app.use(express.json());
+
+// ✅ Session 設定（使用 SQLite 存儲，適合生產環境）
+const SQLiteSessionStore = SQLiteStore(session);
 app.use(session({
   store: new SQLiteSessionStore({
     db: "sessions.db",
@@ -25,9 +32,8 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 // 24小時
   }
 }));
-//app.use(express.json());
-//app.use(session({ secret: "macau-payroll", resave: false, saveUninitialized: false }));
 
+// ========== 認證路由 ==========
 app.get("/api/auth/me", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT id,username,role,employeeId FROM users WHERE id = ?").get(req.session.userId);
@@ -36,6 +42,10 @@ app.get("/api/auth/me", (req, res) => {
 
 app.post("/api/auth/login", (req, res) => {
   const { username, password } = req.body;
+  // 簡單驗證
+  if (!username || !password) {
+    return res.status(400).json({ error: "請輸入帳號和密碼" });
+  }
   const u = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
   if (!u || u.password !== password) return res.status(401).json({ error: "登入失敗" });
   req.session.userId = u.id;
@@ -46,6 +56,7 @@ app.post("/api/auth/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
+// ========== 員工路由 ==========
 app.get("/api/employees", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT role,employeeId FROM users WHERE id = ?").get(req.session.userId);
@@ -56,7 +67,7 @@ app.get("/api/employees", (req, res) => {
 app.post("/api/employees", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT role FROM users WHERE id = ?").get(req.session.userId);
-  if (u.role !== "admin") return res.status(403).json({ error:  "無權限" });
+  if (u.role !== "admin") return res.status(403).json({ error: "無權限" });
   const rows = req.body;
   for (const r of rows) {
     db.prepare("INSERT OR REPLACE INTO employees (id,name,englishName,jobTitle,department,baseSalary,fixedAllowance,fssEmployer,fssEmployee,m5TaxTable,joinedAt,status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(
@@ -66,6 +77,7 @@ app.post("/api/employees", (req, res) => {
   res.json({ ok: true });
 });
 
+// ========== 薪資路由 ==========
 app.get("/api/payroll/:period", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT role,employeeId FROM users WHERE id = ?").get(req.session.userId);
@@ -92,7 +104,7 @@ app.get("/api/payroll/:period", (req, res) => {
 app.post("/api/payroll/:period", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
   const u = db.prepare("SELECT role FROM users WHERE id = ?").get(req.session.userId);
-  if (u.role !== "admin") return res.status(403).json({ error:  "無權限" });
+  if (u.role !== "admin") return res.status(403).json({ error: "無權限" });
   const insert = db.prepare("INSERT OR REPLACE INTO payroll_records (employeeId,period,otHours,otRate,shDays,noPayLeaveDays,tipPay,m5Tax,fssEmp) VALUES (?,?,?,?,?,?,?,?,?)");
   for (const r of req.body) {
     insert.run(r.emp.id, req.params.period, r.otHours, r.otRate, r.shDays, r.noPayLeaveDays, r.tipPay, r.m5Tax ?? -1, r.fssEmp ?? 30);
@@ -100,10 +112,20 @@ app.post("/api/payroll/:period", (req, res) => {
   res.json({ ok: true });
 });
 
+// ========== 前端靜態檔案 ==========
 app.use(express.static(path.join(__dirname, "../dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
+// ========== 自動建立預設管理員（如果冇用戶） ==========
+const userCount = db.prepare("SELECT COUNT(*) as count FROM users").get();
+if (userCount.count === 0) {
+  db.prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)")
+    .run("admin", "admin123", "admin");
+  console.log("✅ 預設管理員已建立：admin / admin123");
+}
+
+// ========== 啟動伺服器 ==========
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log("Server on " + PORT));
