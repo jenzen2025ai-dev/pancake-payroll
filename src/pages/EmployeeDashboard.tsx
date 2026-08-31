@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
 import { calc } from "../lib/payroll";
@@ -23,20 +23,20 @@ export default function EmployeeDashboard() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">??蝟批</h1>
-        <button onClick={logout} className="text-sm text-gray-600 underline">?餃</button>
+        <h1 className="text-2xl font-bold">我的糧單</h1>
+        <button onClick={logout} className="text-sm text-gray-600 underline">登出</button>
       </div>
       {emp && result && (
         <div className="bg-white rounded shadow p-6 space-y-2">
           <div className="text-lg font-semibold">{emp.name} {emp.englishName ? `(${emp.englishName})` : ""}</div>
           <div className="text-sm text-gray-500">{emp.jobTitle} / {emp.department} / {period}</div>
           <hr className="my-3" />
-          <Row label="摨" v={fmt.format(result.emp.baseSalary)} />
-          <Row label="?箏?瘣亥票" v={fmt.format(result.emp.fixedAllowance)} />
-          <Row label="蝮賣?? v={fmt.format(result.gross)} />
-          <Row label="M/5 ?瑟平蝔? v={fmt.format(result.m5TaxCalc)} />
-          <Row label="FSS ?勗" v={fmt.format(result.fssEmpCalc)} />
-          <Row label="撖行" v={fmt.format(result.net)} highlight />
+          <Row label="底薪" v={fmt.format(result.emp.baseSalary)} />
+          <Row label="固定津貼" v={fmt.format(result.emp.fixedAllowance)} />
+          <Row label="總收入" v={fmt.format(result.gross)} />
+          <Row label="M/5 職業稅" v={fmt.format(result.m5TaxCalc)} />
+          <Row label="FSS 僱員" v={fmt.format(result.fssEmpCalc)} />
+          <Row label="實收" v={fmt.format(result.net)} highlight />
         </div>
       )}
     </div>
