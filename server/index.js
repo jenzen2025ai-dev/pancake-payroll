@@ -7,9 +7,26 @@ import { db } from "./db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+const SQLiteSessionStore = SQLiteStore(session);
 
-app.use(express.json());
-app.use(session({ secret: "macau-payroll", resave: false, saveUninitialized: false }));
+app.use(session({
+  store: new SQLiteSessionStore({
+    db: "sessions.db",
+    dir: "./data",
+    createDirIfNotExists: true
+  }),
+  secret: "pancake-payroll-secret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: true,        // Render 係 HTTPS，必須 true
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24 // 24小時
+  }
+}));
+//app.use(express.json());
+//app.use(session({ secret: "macau-payroll", resave: false, saveUninitialized: false }));
 
 app.get("/api/auth/me", (req, res) => {
   if (!req.session.userId) return res.status(401).json({});
