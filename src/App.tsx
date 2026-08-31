@@ -8,7 +8,7 @@ import EmployeesPage from "./pages/EmployeesPage";
 
 function Protected({ children, adminOnly }: { children: JSX.Element; adminOnly?: boolean }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="p-6">頛銝?..</div>;
+  if (loading) return <div className="p-6">載入中..</div>;
   if (!user) return <Navigate to="/login" />;
   if (adminOnly && user.role !== "admin") return <Navigate to="/me" />;
   return children;
