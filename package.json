@@ -22,7 +22,7 @@
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2",
     "vite": "^5.4.8",
-    "connect-sqlite3": "^6.0.0"
+    "connect-sqlite3": "^0.9.18"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.11",
