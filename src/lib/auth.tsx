@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     });
-    if (!r.ok) throw new Error("?餃憭望?");
+    if (!r.ok) throw new Error("登入失敗");
     const d = await r.json();
     setUser(d.user);
   }
