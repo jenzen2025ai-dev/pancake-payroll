@@ -13,7 +13,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link to="/admin/employees" className="block bg-white p-6 rounded shadow hover:bg-slate-50">
           <div className="font-semibold">員工列表</div>
-          <div className="text-sm text-gray-500">總薪/div>
+          <div className="text-sm text-gray-500">總薪</div>
         </Link>
         <div className="bg-white p-6 rounded shadow">
           <div className="font-semibold mb-2">獎金</div>
